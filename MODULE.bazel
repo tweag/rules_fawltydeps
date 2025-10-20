@@ -1,0 +1,24 @@
+"""rules_fawltydeps - Bazel rules for FawltyDeps"""
+
+module(
+    name = "rules_fawltydeps",
+    version = "0.1.0",
+)
+
+# Python dependency for running fawltydeps
+bazel_dep(name = "rules_python", version = "0.27.0")
+
+# Python toolchain
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.11",
+)
+
+# pip dependencies for fawltydeps
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "fawltydeps_pip",
+    python_version = "3.11",
+    requirements_lock = "//:requirements_lock.txt",
+)
+use_repo(pip, "fawltydeps_pip")

@@ -1,0 +1,21 @@
+"""Example project using rules_fawltydeps."""
+
+module(
+    name = "fawltydeps_example",
+    version = "0.0.1",
+)
+
+# Use the parent rules_fawltydeps module
+bazel_dep(name = "rules_fawltydeps", version = "0.1.0")
+local_path_override(
+    module_name = "rules_fawltydeps",
+    path = "../..",
+)
+
+# Python rules
+bazel_dep(name = "rules_python", version = "0.27.0")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.11",
+)
