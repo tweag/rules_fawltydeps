@@ -1,0 +1,5 @@
+"""Build file for FawltyDeps rules."""
+
+exports_files([
+    "defs.bzl",
+])
