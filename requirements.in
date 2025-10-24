@@ -1,0 +1,3 @@
+fawltydeps>=0.15.0
+tomli # undeclared fawltydeps dep
+pyyaml

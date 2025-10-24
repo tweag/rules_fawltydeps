@@ -1,97 +1,148 @@
-"""FawltyDeps Bazel aspect and rules for checking Python dependencies."""
+"""FawltyDeps Bazel aspect for checking Python dependencies."""
+
+load("@rules_python//python:defs.bzl", ExternalPyInfo = "PyInfo")
 
 FawltyDepsInfo = provider(
     doc = "Information about FawltyDeps analysis",
     fields = {
-        "sources": "depset of source files",
-        "imports": "depset of import names found in sources",
-        "declared_deps": "depset of declared dependency names",
+        "files": "Files directly exposed by this rule",
     },
 )
+
+IGNORE_MISSING_IMPORTS = []  # XXX: make configurable
+IGNORE_UNUSED_DEPS = []
+EXTRA_MAPPINGS = {}
+_EXTRA_MAPPING_LABELS = {Label(k): k for k in EXTRA_MAPPINGS.keys()}
+
+_ESCAPES = {
+    "_": "_u",  # must be first
+    "/": "_s",
+    ":": "_c",
+    "@": "_a",
+    "\\": "_b",
+    "-": "_d",
+}
+
+def escape(s):
+    for k, v in _ESCAPES.items():
+        s = s.replace(k, v)
+    return "package" + s
+
 
 def _fawltydeps_aspect_impl(target, ctx):
     """Aspect implementation to collect Python dependency information."""
     
-    # Only process Python targets
-    if not hasattr(target, "files"):
+    if "pypi" in str(target.label):
+        return []
+
+    if not hasattr(ctx.rule.attr, "srcs"):
         return []
     
-    sources = depset()
-    imports = depset()
-    declared_deps = depset()
-    
+    srcs = ctx.rule.attr.srcs
+    data = getattr(ctx.rule.attr, "data", [])
+    deps = getattr(ctx.rule.attr, "deps", [])
+
     # Collect Python source files
-    if PyInfo in target:
-        py_info = target[PyInfo]
-        sources = depset(
-            direct = [f for f in target.files.to_list() if f.extension == "py"],
-            transitive = [],
-        )
-        
-        # Collect declared dependencies
-        if hasattr(ctx.rule.attr, "deps"):
-            dep_labels = [str(dep.label) for dep in ctx.rule.attr.deps]
-            declared_deps = depset(direct = dep_labels)
+    python_files = []
+    for src in srcs:
+        python_files += [
+            f for f in src.files.to_list() if f.extension == "py" and not f.path.startswith("external/")
+        ]
+    for src in data: 
+        if PyInfo in src:
+            fail("py_library should go in deps, not data")
+
+        python_files += [
+            f for f in src.files.to_list() if f.extension == "py" and not f.path.startswith("external/")
+        ]
     
-    # Create analysis output file
-    output = ctx.actions.declare_file(target.label.name + ".fawltydeps_report")
-    
-    # Write basic report
-    ctx.actions.write(
-        output = output,
-        content = "FawltyDeps Analysis for: {}\nSources: {}\nDeclared deps: {}\n".format(
-            target.label,
-            len(sources.to_list()),
-            len(declared_deps.to_list()),
-        ),
+    if not python_files:
+        return []
+    elif "no-fawltydeps" in ctx.rule.attr.tags:
+        return [FawltyDepsInfo(files = python_files)]
+
+    direct_imports = []
+    imported_files = []
+    for dep in deps:
+        if dep.label in _EXTRA_MAPPING_LABELS:
+            direct_imports.append(escape(_EXTRA_MAPPING_LABELS[dep.label]))
+        elif PyInfo in dep or ExternalPyInfo in dep:
+            if dep.label.repo_name.startswith("rules_python++pip+py_deps_"):
+                # rules_python++pip+py_deps_310_requests -> requests
+                direct_imports.append(escape("@py_deps//" + str(dep.label).split("_", 4)[-1].split("/")[0]))
+                print(dep.label.repo_name, "->", direct_imports[-1])
+            elif FawltyDepsInfo in dep:
+                imported_files += dep[FawltyDepsInfo].files
+
+    package = target.label.package
+    global_mapping = ctx.file._fawltydeps_manifest
+
+    requirements = ctx.actions.declare_file(target.label.name + "_requirements.txt")
+    ctx.actions.write(requirements, "\n".join(direct_imports) + "\n")
+    print("Inside aspect", target.label, direct_imports)
+
+    mapping_file = ctx.actions.declare_file(target.label.name + "_mapping_file.toml")
+    mapping_file_content = "\n".join(['"{}" = {}'.format(escape(k), v) for k, v in EXTRA_MAPPINGS.items()])
+    ctx.actions.write(mapping_file, mapping_file_content)
+
+    report_file = ctx.actions.declare_file(target.label.name + ".fawltydeps_report.txt")
+
+    # wrapper args 
+    args = ctx.actions.args()
+    args.add(report_file.path)
+    args.add(target.label)
+    args.add(package)
+
+    # fawltydeps args
+
+    # Some libraries are just glorified filegroups factoring some common files and dependencies for a few binaries in the same package.
+    # They would not work if called from another package because they behave like binaries without being so.
+    # The solution I found was to annotate them with "py_binary" tags, so their special behavior can be handled correctly.
+    if ctx.rule.kind in ["py_binary", "py_test"] or "py_binary" in ctx.rule.attr.tags:
+        args.add(package)
+        args.add("--base-dir", package)
+    else:
+        args.add(".")
+        args.add("--base-dir", ".")
+
+    args.add("--json")
+    args.add("--check")
+    args.add_all("--ignore-undeclared", IGNORE_MISSING_IMPORTS)
+    args.add_all("--ignore-unused", [escape(p) for p in IGNORE_UNUSED_DEPS])
+    args.add_all("--code", python_files)
+    args.add("--deps", requirements.path)
+    args.add("--custom-mapping-file", mapping_file.path)
+    args.add("--custom-mapping-file", global_mapping.path)
+
+    ctx.actions.run(
+        executable = ctx.executable._fawltydeps,
+        arguments = [args],
+        inputs = [requirements, mapping_file, global_mapping] + python_files + imported_files,
+        outputs = [report_file],
+        mnemonic = "FawltyDeps",
+        progress_message = "FawltyDeps %{label}",
     )
-    
+
     return [
-        FawltyDepsInfo(
-            sources = sources,
-            imports = imports,
-            declared_deps = declared_deps,
-        ),
-        OutputGroupInfo(
-            fawltydeps_report = depset([output]),
-        ),
+        OutputGroupInfo(fawltydeps_report = [report_file]),
+        FawltyDepsInfo(files = python_files),
     ]
 
 fawltydeps_aspect = aspect(
     implementation = _fawltydeps_aspect_impl,
     attr_aspects = ["deps"],
-    provides = [FawltyDepsInfo],
-)
-
-def _fawltydeps_check_impl(ctx):
-    """Rule implementation to check Python dependencies with FawltyDeps."""
-    
-    target = ctx.attr.target
-    
-    # Get the aspect information
-    if FawltyDepsInfo not in target:
-        fail("Target does not have FawltyDepsInfo")
-    
-    info = target[FawltyDepsInfo]
-    
-    # Create output file
-    output = ctx.actions.declare_file(ctx.label.name + "_check.txt")
-    
-    # For now, just create a simple report
-    ctx.actions.write(
-        output = output,
-        content = "FawltyDeps check completed for: {}\n".format(ctx.attr.target.label),
-    )
-    
-    return [DefaultInfo(files = depset([output]))]
-
-fawltydeps_check = rule(
-    implementation = _fawltydeps_check_impl,
+    #required_providers = [[PyInfo], [ExternalPyInfo]],
+    #provides = [FawltyDepsInfo],
     attrs = {
-        "target": attr.label(
-            aspects = [fawltydeps_aspect],
-            doc = "The Python target to check",
+        "_fawltydeps": attr.label(
+            cfg = "exec",
+            executable = True,
+            allow_files = True,
+            default = "@rules_fawltydeps//fawltydeps:fawltydeps_wrapper",
+        ),
+        "_fawltydeps_manifest": attr.label(
+            allow_single_file = [".toml"],
+            default = "@rules_fawltydeps//fawltydeps:manifest",
         ),
     },
-    doc = "Check Python dependencies using FawltyDeps",
 )
