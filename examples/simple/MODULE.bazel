@@ -7,7 +7,7 @@ module(
 bazel_dep(name = "rules_fawltydeps", version = "0.1.0")
 local_path_override(
     module_name = "rules_fawltydeps",
-    path = "../rules_fawltydeps",
+    path = "../..",
 )
 
 bazel_dep(name = "rules_python", version = "0.40.0")

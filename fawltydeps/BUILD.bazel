@@ -9,6 +9,12 @@ exports_files([
     "defs.bzl",
 ])
 
+filegroup(
+    name = "all_files",
+    srcs = glob(["*"]),
+    visibility = ["//:__subpackages__"],
+)
+
 py_binary(
     name = "fawltydeps_wrapper",
     srcs = ["fawltydeps_wrapper.py"],

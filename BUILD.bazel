@@ -3,3 +3,16 @@
 exports_files([
     "requirements.txt",
 ])
+
+# This target collects all of rules_fawltydeps files needed by the integration test workspaces.
+filegroup(
+    name = "local_repository_files",
+    # Include every package that is required by the child workspaces.
+    srcs = [
+        "BUILD.bazel",
+        "MODULE.bazel",
+        "MODULE.lock",
+        "//fawltydeps:all_files",
+    ],
+    visibility = ["//:__subpackages__"],
+)
