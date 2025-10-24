@@ -11,8 +11,10 @@ filegroup(
     srcs = [
         "BUILD.bazel",
         "MODULE.bazel",
-        "MODULE.lock",
+        "MODULE.bazel.lock",
+        "requirements.txt",
         "//fawltydeps:all_files",
+        "//fawltydeps/extensions:all_files",
     ],
     visibility = ["//:__subpackages__"],
 )

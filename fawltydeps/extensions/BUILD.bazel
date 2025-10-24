@@ -1,0 +1,13 @@
+exports_files([
+    "fawltydeps.bzl",
+    #    "defs.tpl.bzl",
+    #    "BUILD.bzl.bazel",
+    #    "convert_manifest.tpl.py",
+    #    "fawltydeps_wrapper.tpl.py",
+])
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["*"]),
+    visibility = ["//:__subpackages__"],
+)

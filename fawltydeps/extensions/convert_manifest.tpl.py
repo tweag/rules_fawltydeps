@@ -21,7 +21,7 @@ _ESCAPES = {
 
 # Map to the internal, escaped convention used by our fawltydeps tooling
 def escape(s: str) -> str:
-    s = f"package@py_deps//{s}"
+    s = f"package@{pip_repo_name}//{s}"
     for k, v in _ESCAPES.items():
         s = s.replace(k, v)
     return s

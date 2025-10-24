@@ -1,0 +1,48 @@
+"""Build file for FawltyDeps rules."""
+
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
+load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
+load("{pip_repo}//:requirements.bzl", "all_whl_requirements")
+
+exports_files([
+    "defs.bzl",
+])
+
+py_binary(
+    name = "fawltydeps_wrapper",
+    srcs = ["fawltydeps_wrapper.py"],
+    visibility = ["//visibility:public"],
+    deps = ["@fawltydeps_pip//fawltydeps"],
+)
+
+py_binary(
+    name = "convert_manifest",
+    srcs = ["convert_manifest.py"],
+    visibility = ["//visibility:public"],
+    deps = ["@fawltydeps_pip//pyyaml"],
+)
+
+# This rule fetches the metadata for python packages we depend on. That data is
+# required for the gazelle_python_manifest rule to update our manifest file.
+modules_mapping(
+    name = "modules_map",
+    wheels = all_whl_requirements,
+)
+
+# Use gazelle_python to extract import names from packages
+gazelle_python_manifest(
+    name = "gazelle_python_manifest",
+    modules_mapping = ":modules_map",
+    pip_repository_name = "{pip_repo_name}",
+    tags = ["manual"],
+)
+
+genrule(
+    name = "manifest",
+    srcs = [":gazelle_python_manifest.generated_manifest"],
+    outs = ["fawltydeps_mapping.toml"],
+    cmd = "$(location :convert_manifest) $< > $@",
+    tools = [":convert_manifest"],
+    visibility = ["//visibility:public"],
+)

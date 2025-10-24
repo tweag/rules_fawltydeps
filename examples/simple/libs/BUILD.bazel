@@ -9,6 +9,6 @@ py_library(
 py_library(
     name = "db",
     srcs = ["db.py"],
-    deps = ["@py_deps//sqlalchemy"],
     visibility = ["//visibility:public"],
+    deps = ["@py_deps//sqlalchemy"],
 )

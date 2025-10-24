@@ -28,16 +28,15 @@ def escape(s):
         s = s.replace(k, v)
     return "package" + s
 
-
 def _fawltydeps_aspect_impl(target, ctx):
     """Aspect implementation to collect Python dependency information."""
-    
+
     if "pypi" in str(target.label):
         return []
 
     if not hasattr(ctx.rule.attr, "srcs"):
         return []
-    
+
     srcs = ctx.rule.attr.srcs
     data = getattr(ctx.rule.attr, "data", [])
     deps = getattr(ctx.rule.attr, "deps", [])
@@ -46,16 +45,20 @@ def _fawltydeps_aspect_impl(target, ctx):
     python_files = []
     for src in srcs:
         python_files += [
-            f for f in src.files.to_list() if f.extension == "py" and not f.path.startswith("external/")
+            f
+            for f in src.files.to_list()
+            if f.extension == "py" and not f.path.startswith("external/")
         ]
-    for src in data: 
+    for src in data:
         if PyInfo in src:
             fail("py_library should go in deps, not data")
 
         python_files += [
-            f for f in src.files.to_list() if f.extension == "py" and not f.path.startswith("external/")
+            f
+            for f in src.files.to_list()
+            if f.extension == "py" and not f.path.startswith("external/")
         ]
-    
+
     if not python_files:
         return []
     elif "no-fawltydeps" in ctx.rule.attr.tags:
@@ -87,7 +90,7 @@ def _fawltydeps_aspect_impl(target, ctx):
 
     report_file = ctx.actions.declare_file(target.label.name + ".fawltydeps_report.txt")
 
-    # wrapper args 
+    # wrapper args
     args = ctx.actions.args()
     args.add(report_file.path)
     args.add(target.label)
@@ -138,11 +141,11 @@ fawltydeps_aspect = aspect(
             cfg = "exec",
             executable = True,
             allow_files = True,
-            default = "@rules_fawltydeps//fawltydeps:fawltydeps_wrapper",
+            default = "//:fawltydeps_wrapper",
         ),
         "_fawltydeps_manifest": attr.label(
             allow_single_file = [".toml"],
-            default = "@rules_fawltydeps//fawltydeps:manifest",
+            default = "//:manifest",
         ),
     },
 )

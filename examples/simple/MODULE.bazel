@@ -10,6 +10,12 @@ local_path_override(
     path = "../..",
 )
 
+fawltydeps = use_extension("@rules_fawltydeps//fawltydeps/extensions:fawltydeps.bzl", "fawltydeps")
+fawltydeps.configure(
+    pip_repo = "@py_deps",
+)
+use_repo(fawltydeps, "fawltydeps")
+
 bazel_dep(name = "rules_python", version = "0.40.0")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")

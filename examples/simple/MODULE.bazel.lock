@@ -190,6 +190,32 @@
         ]
       }
     },
+    "@@rules_fawltydeps+//fawltydeps/extensions:fawltydeps.bzl%fawltydeps": {
+      "general": {
+        "bzlTransitiveDigest": "g/nIjxoELcqhJFCEl3Mn40KME6j/oe8LsqJeGHHbb64=",
+        "usagesDigest": "NIV7V/K3E9vxzrVfaHXAnekEj96oIrOT89GTAt3WMeA=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {
+          "RULES_PYTHON_BZLMOD_DEBUG": null
+        },
+        "generatedRepoSpecs": {
+          "fawltydeps": {
+            "repoRuleId": "@@rules_fawltydeps+//fawltydeps/extensions:fawltydeps.bzl%fawltydeps_repo",
+            "attributes": {
+              "pip_repo": "@@rules_python++pip+py_deps//:py_deps"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "py_deps",
+            "rules_python++pip+py_deps"
+          ]
+        ]
+      }
+    },
     "@@rules_fuzzing+//fuzzing/private:extensions.bzl%non_module_dependencies": {
       "general": {
         "bzlTransitiveDigest": "v2H25KPHEkN56IHR41S67Kzp5Xjxd75GBiazhON8jzc=",

@@ -5,7 +5,7 @@ py_binary(
     srcs = ["client.py"],
     deps = [
         "//libs:utils",
-        "@py_deps//requests",
         "@py_deps//click",
+        "@py_deps//requests",
     ],
 )
