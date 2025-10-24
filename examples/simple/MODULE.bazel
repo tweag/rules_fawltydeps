@@ -1,21 +1,24 @@
-"""Example project using rules_fawltydeps."""
-
 module(
-    name = "fawltydeps_example",
-    version = "0.0.1",
+    name = "toy_bazel_python_app",
+    version = "0.1.0",
+    compatibility_level = 1,
 )
 
-# Use the parent rules_fawltydeps module
 bazel_dep(name = "rules_fawltydeps", version = "0.1.0")
 local_path_override(
     module_name = "rules_fawltydeps",
-    path = "../..",
+    path = "../rules_fawltydeps",
 )
 
-# Python rules
-bazel_dep(name = "rules_python", version = "0.27.0")
+bazel_dep(name = "rules_python", version = "0.40.0")
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-python.toolchain(
-    python_version = "3.11",
+python.toolchain(python_version = "3.10")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "py_deps",
+    python_version = "3.10",
+    requirements_lock = "//:requirements.txt",
 )
+use_repo(pip, "py_deps")

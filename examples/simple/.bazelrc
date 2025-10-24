@@ -1,0 +1,5 @@
+
+build:fawltydeps --aspects @rules_fawltydeps//fawltydeps:defs.bzl%fawltydeps_aspect
+build:fawltydeps --output_groups=fawltydeps_report
+
+build --config=fawltydeps

@@ -1,0 +1,14 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "utils",
+    srcs = ["utils.py"],
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "db",
+    srcs = ["db.py"],
+    deps = ["@py_deps//sqlalchemy"],
+    visibility = ["//visibility:public"],
+)
