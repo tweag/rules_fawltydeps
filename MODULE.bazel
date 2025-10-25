@@ -6,7 +6,7 @@ module(
 )
 
 # Python dependency for running fawltydeps
-bazel_dep(name = "rules_python", version = "0.27.0")
+bazel_dep(name = "rules_python", version = "0.40.0")
 
 # rules_python gazelle to reuse their manifests generation
 bazel_dep(name = "rules_python_gazelle_plugin", version = "1.6.3")
@@ -41,4 +41,11 @@ bazel_binaries = use_extension(
 bazel_binaries.download(version_file = "//:.bazelversion")
 bazel_binaries.download(version = "7.0.0")
 bazel_binaries.download(version = "last_green")
-use_repo(bazel_binaries, "bazel_binaries")
+use_repo(
+    bazel_binaries,
+    "bazel_binaries",
+    "bazel_binaries_bazelisk",
+    "build_bazel_bazel_.bazelversion",
+    "build_bazel_bazel_7_0_0",
+    "build_bazel_bazel_last_green",
+)

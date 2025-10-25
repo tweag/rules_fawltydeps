@@ -9,6 +9,7 @@ FawltyDepsInfo = provider(
     },
 )
 
+REPO_NAME_UNDERSCORES = len("{pip_repo_name}".split("_")) -1
 IGNORE_MISSING_IMPORTS = []  # XXX: make configurable
 IGNORE_UNUSED_DEPS = []
 EXTRA_MAPPINGS = {}
@@ -52,7 +53,7 @@ def _fawltydeps_aspect_impl(target, ctx):
     for src in data:
         if PyInfo in src:
             fail("py_library should go in deps, not data")
-
+        # XXX: Do we, in general, want to deal with python sources in data ?
         python_files += [
             f
             for f in src.files.to_list()
@@ -70,9 +71,12 @@ def _fawltydeps_aspect_impl(target, ctx):
         if dep.label in _EXTRA_MAPPING_LABELS:
             direct_imports.append(escape(_EXTRA_MAPPING_LABELS[dep.label]))
         elif PyInfo in dep or ExternalPyInfo in dep:
-            if dep.label.repo_name.startswith("rules_python++pip+py_deps_"):
-                # rules_python++pip+py_deps_310_requests -> requests
-                direct_imports.append(escape("@py_deps//" + str(dep.label).split("_", 4)[-1].split("/")[0]))
+            if dep.label.repo_name.startswith("rules_python++pip+{pip_repo_name}_"):
+                # rules_python++pip+{pip_repo_name}_310_requests -> requests
+                #   1  |                  ???      | 2 |  [3:]
+                repo_name_parts = 3 + REPO_NAME_UNDERSCORES
+                pip_package_name = dep.label.repo_name.split("_", repo_name_parts)[-1]
+                direct_imports.append(escape("@{pip_repo_name}//" + pip_package_name))
                 print(dep.label.repo_name, "->", direct_imports[-1])
             elif FawltyDepsInfo in dep:
                 imported_files += dep[FawltyDepsInfo].files
