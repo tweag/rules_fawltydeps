@@ -1,9 +1,15 @@
 load("@rules_python//python:defs.bzl", "py_binary")
 
+py_library(
+    name = "sidequest",
+    srcs = ["sidequest.py"],
+)
+
 py_binary(
     name = "client",
     srcs = ["client.py"],
     deps = [
+        ":sidequest",
         "//libs:utils",
         "@py_deps//click",
         "@py_deps//requests",

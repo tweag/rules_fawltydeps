@@ -103,15 +103,14 @@ def _fawltydeps_aspect_impl(target, ctx):
     # Some libraries are just glorified filegroups factoring some common files and dependencies for a few binaries in the same package.
     # They would not work if called from another package because they behave like binaries without being so.
     # The solution I found was to annotate them with "py_binary" tags, so their special behavior can be handled correctly.
+    envs = ["."] # The workspace root
     if ctx.rule.kind in ["py_binary", "py_test"] or "py_binary" in ctx.rule.attr.tags:
-        args.add(package)
-        args.add("--base-dir", package)
-    else:
-        args.add(".")
-        args.add("--base-dir", ".")
+        envs = [package, "."] # The package first, then the workspace root.
 
     args.add("--json")
     args.add("--check")
+    args.add_all("--pyenv", envs)
+    args.add("--base-dir", ".")
     args.add_all("--ignore-undeclared", IGNORE_MISSING_IMPORTS)
     args.add_all("--ignore-unused", [escape(p) for p in IGNORE_UNUSED_DEPS])
     args.add_all("--code", python_files)
