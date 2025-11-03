@@ -77,7 +77,6 @@ def _fawltydeps_aspect_impl(target, ctx):
                 repo_name_parts = 3 + REPO_NAME_UNDERSCORES
                 pip_package_name = dep.label.repo_name.split("_", repo_name_parts)[-1]
                 direct_imports.append(escape("@{pip_repo_name}//" + pip_package_name))
-                print(dep.label.repo_name, "->", direct_imports[-1])
             elif FawltyDepsInfo in dep:
                 imported_files += dep[FawltyDepsInfo].files
 
@@ -86,7 +85,6 @@ def _fawltydeps_aspect_impl(target, ctx):
 
     requirements = ctx.actions.declare_file(target.label.name + "_requirements.txt")
     ctx.actions.write(requirements, "\n".join(direct_imports) + "\n")
-    print("Inside aspect", target.label, direct_imports)
 
     mapping_file = ctx.actions.declare_file(target.label.name + "_mapping_file.toml")
     mapping_file_content = "\n".join(['"{}" = {}'.format(escape(k), v) for k, v in EXTRA_MAPPINGS.items()])

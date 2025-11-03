@@ -36,7 +36,7 @@ def analyze_results(analysis: Any):
         for p in u["references"]:
             print(f"  - imported at {p['path']}:{p['lineno']}")
         # Other candidates are just the package name and as such are mostly useless
-        candidates = [c for c in u["candidates"] if c.startswith("package") and "google" not in c]
+        candidates = [c for c in u["candidates"] if c.startswith("package")]
         if len(candidates) == 0:
             print("  Could not find any installed pip package providing that import.")
         elif len(candidates) == 1:
