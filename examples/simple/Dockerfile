@@ -4,12 +4,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
     curl \
-    unzip \
+    fd-find \
+    git \
     python3 \
     python3-pip \
     ripgrep \
-    fd-find \
     sudo \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Bazelisk
