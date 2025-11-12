@@ -1,6 +1,7 @@
 """FawltyDeps Bazel aspect for checking Python dependencies."""
 
-load("@rules_python//python:defs.bzl", ExternalPyInfo = "PyInfo")
+load("@rules_python//python:defs.bzl", "PyInfo")
+load("@rules_python//python/private:reexports.bzl", "BuiltinPyInfo")
 
 FawltyDepsInfo = provider(
     doc = "Information about FawltyDeps analysis",
@@ -33,10 +34,10 @@ def _fawltydeps_aspect_impl(target, ctx):
     """Aspect implementation to collect Python dependency information."""
 
     if "pypi" in str(target.label):
-        return []
+        return [FawltyDepsInfo(files = [])]
 
     if not hasattr(ctx.rule.attr, "srcs"):
-        return []
+        return [FawltyDepsInfo(files = [])]
 
     srcs = ctx.rule.attr.srcs
     data = getattr(ctx.rule.attr, "data", [])
@@ -61,7 +62,7 @@ def _fawltydeps_aspect_impl(target, ctx):
         ]
 
     if not python_files:
-        return []
+        return [FawltyDepsInfo(files = [])]
     elif "no-fawltydeps" in ctx.rule.attr.tags:
         return [FawltyDepsInfo(files = python_files)]
 
@@ -70,8 +71,8 @@ def _fawltydeps_aspect_impl(target, ctx):
     for dep in deps:
         if dep.label in _EXTRA_MAPPING_LABELS:
             direct_imports.append(escape(_EXTRA_MAPPING_LABELS[dep.label]))
-        elif PyInfo in dep or ExternalPyInfo in dep:
-            if dep.label.repo_name.startswith("rules_python++pip+{pip_repo_name}_"):
+        elif PyInfo in dep or (BuiltinPyInfo != None and BuiltinPyInfo in dep):
+            if dep.label.repo_name.startswith("rules_python{+}{+}pip{+}{pip_repo_name}_"):
                 # rules_python++pip+{pip_repo_name}_310_requests -> requests
                 #   1  |                  ???      | 2 |  [3:]
                 repo_name_parts = 3 + REPO_NAME_UNDERSCORES
@@ -132,11 +133,13 @@ def _fawltydeps_aspect_impl(target, ctx):
         FawltyDepsInfo(files = python_files),
     ]
 
+_MaybeBuiltinPyInfo = [[BuiltinPyInfo]] if BuiltinPyInfo != None and BuiltinPyInfo != PyInfo else []
+
 fawltydeps_aspect = aspect(
     implementation = _fawltydeps_aspect_impl,
     attr_aspects = ["deps"],
-    #required_providers = [[PyInfo], [ExternalPyInfo]],
-    #provides = [FawltyDepsInfo],
+    required_providers = [[PyInfo]] + _MaybeBuiltinPyInfo,
+    provides = [FawltyDepsInfo],
     attrs = {
         "_fawltydeps": attr.label(
             cfg = "exec",

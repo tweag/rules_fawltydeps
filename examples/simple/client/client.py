@@ -1,12 +1,12 @@
 # Correct external imports:
-#import click
-#import requests
+import click
+import requests
 
-# Broken external imports for demo:
-import bs4  # Not declared in BUILD file, not found in @py_deps
-import click # correct
-import sqlalchemy  # Not declared in BUILD file, found @py_deps
-#import requests  # Declared in BUILD file, but never imported
+# # Broken external imports for demo purposes:
+# import bs4  # Not declared in BUILD file, not found in @py_deps
+# import click # correct
+# import sqlalchemy  # Not declared in BUILD file, found @py_deps
+# #import requests  # Declared in BUILD file, but never imported
 
 # Test importing with full path from workspace root
 from libs.utils import greet

@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     ripgrep \
     sudo \
     unzip \
+    neovim \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Bazelisk

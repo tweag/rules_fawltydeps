@@ -10,36 +10,54 @@ load(
 default_test_runner(
     name = "simple_test_runner",
     bazel_cmds = [
-        "build //... --config=fawltydeps --keep_going --verbose_failures --subcommands",
+        "build //... --repository_cache /home/layus/.cache/bazel_integration_tests --config=fawltydeps --keep_going --verbose_failures --subcommands --repo_contents_cache /home/layus/.cache/bazel_integration_tests_cache",
     ],
 )
 
+default_test_runner(
+    name = "very_simple_test_runner",
+    bazel_cmds = [
+        "build //... --repository_cache /home/layus/.cache/bazel_integration_tests --config=fawltydeps --keep_going --verbose_failures --subcommands",
+    ],
+)
+
+TEST_NAME = "simple"
 # If you only want to execute against a single version of Bazel, use
 # bazel_integration_test.
 bazel_integration_test(
-    name = "simple_test",
+    name = TEST_NAME + "_test",
     bazel_binaries = bazel_binaries,
     bazel_version = bazel_binaries.versions.current,
     test_runner = ":simple_test_runner",
-    workspace_files = integration_test_utils.glob_workspace_files("simple") + [
+    workspace_files = integration_test_utils.glob_workspace_files(TEST_NAME) + [
         "//:local_repository_files",
     ],
-    workspace_path = "simple",
+    workspace_path = TEST_NAME,
 )
 
 # If you want to execute an integration test using multiple versions of Bazel,
 # use bazel_integration_tests. It will generate multiple integration test
 # targets with names derived from the base name and the bazel version.
-bazel_integration_tests(
-    name = "simple_test",
-    bazel_binaries = bazel_binaries,
-    bazel_versions = bazel_binaries.versions.other,
-    test_runner = ":simple_test_runner",
-    workspace_files = integration_test_utils.glob_workspace_files("simple") + [
-        "//:local_repository_files",
-    ],
-    workspace_path = "simple",
-)
+
+
+[
+    bazel_integration_test(
+        name = integration_test_utils.bazel_integration_test_name(
+            TEST_NAME + "_test",
+            bazel_version,
+        ),
+        test_runner = 
+            ":simple_test_runner" if not bazel_version.startswith("7.") 
+            else ":very_simple_test_runner",
+        bazel_version = bazel_version,
+        workspace_path = TEST_NAME,
+        workspace_files = integration_test_utils.glob_workspace_files(TEST_NAME) + [
+            "//:local_repository_files",
+        ],
+        bazel_binaries = bazel_binaries,
+    )
+    for bazel_version in bazel_binaries.versions.other
+]
 
 # By default, the integration test targets are tagged as `manual`. This
 # prevents the targets from being found from most target expansion (e.g.

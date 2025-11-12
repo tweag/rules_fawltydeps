@@ -1,7 +1,5 @@
 def _fawltydeps_repo_impl(ctx):
     # Create files from templates
-    print(str(ctx.attr.pip_repo), ctx.attr.pip_repo, dir(ctx.attr.pip_repo))
-    print([(attr, getattr(ctx.attr.pip_repo, attr)) for attr in dir(ctx.attr.pip_repo)])
     [
         ctx.template(
             target,
@@ -9,6 +7,7 @@ def _fawltydeps_repo_impl(ctx):
             substitutions = {
                 "{pip_repo}": "@@" + ctx.attr.pip_repo.repo_name,
                 "{pip_repo_name}": ctx.attr.pip_repo.name,  # A hack, because @pip turns into rules_python++pip+pip//:pip so the target name is the user-facing repo name
+                "{+}": "+" if int((native.bazel_version or "9.x").split('.')[0]) >= 8 else "~"
             },
         )
         for target, src in [
