@@ -21,9 +21,11 @@ default_test_runner(
     ],
 )
 
+
+## Simple
+
 TEST_NAME = "simple"
-# If you only want to execute against a single version of Bazel, use
-# bazel_integration_test.
+
 bazel_integration_test(
     name = TEST_NAME + "_test",
     bazel_binaries = bazel_binaries,
@@ -34,11 +36,6 @@ bazel_integration_test(
     ],
     workspace_path = TEST_NAME,
 )
-
-# If you want to execute an integration test using multiple versions of Bazel,
-# use bazel_integration_tests. It will generate multiple integration test
-# targets with names derived from the base name and the bazel version.
-
 
 [
     bazel_integration_test(
@@ -58,6 +55,9 @@ bazel_integration_test(
     )
     for bazel_version in bazel_binaries.versions.other
 ]
+
+
+## All integration tests
 
 # By default, the integration test targets are tagged as `manual`. This
 # prevents the targets from being found from most target expansion (e.g.
