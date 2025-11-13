@@ -3,6 +3,3 @@
 # `bazel run @rules_bazel_integration_test//tools:update_deleted_packages`
 build --deleted_packages=examples/simple,examples/simple/client,examples/simple/libs,examples/simple/server
 query --deleted_packages=examples/simple,examples/simple/client,examples/simple/libs,examples/simple/server
-
-common --repository_cache /home/layus/.cache/bazel_integration_tests
-common --repo_contents_cache /home/layus/.cache/bazel_integration_tests_cache

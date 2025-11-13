@@ -2,25 +2,14 @@ load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load(
     "@rules_bazel_integration_test//bazel_integration_test:defs.bzl",
     "bazel_integration_test",
-    "bazel_integration_tests",
-    "default_test_runner",
     "integration_test_utils",
 )
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
-default_test_runner(
+sh_binary(
     name = "simple_test_runner",
-    bazel_cmds = [
-        "build //... --repository_cache /home/layus/.cache/bazel_integration_tests --config=fawltydeps --keep_going --verbose_failures --subcommands --repo_contents_cache /home/layus/.cache/bazel_integration_tests_cache",
-    ],
+    srcs = [":caching_test_runner.sh"],
 )
-
-default_test_runner(
-    name = "very_simple_test_runner",
-    bazel_cmds = [
-        "build //... --repository_cache /home/layus/.cache/bazel_integration_tests --config=fawltydeps --keep_going --verbose_failures --subcommands",
-    ],
-)
-
 
 ## Simple
 
@@ -43,19 +32,16 @@ bazel_integration_test(
             TEST_NAME + "_test",
             bazel_version,
         ),
-        test_runner = 
-            ":simple_test_runner" if not bazel_version.startswith("7.") 
-            else ":very_simple_test_runner",
+        bazel_binaries = bazel_binaries,
         bazel_version = bazel_version,
-        workspace_path = TEST_NAME,
+        test_runner = ":simple_test_runner",
         workspace_files = integration_test_utils.glob_workspace_files(TEST_NAME) + [
             "//:local_repository_files",
         ],
-        bazel_binaries = bazel_binaries,
+        workspace_path = TEST_NAME,
     )
     for bazel_version in bazel_binaries.versions.other
 ]
-
 
 ## All integration tests
 

@@ -10,7 +10,7 @@ FawltyDepsInfo = provider(
     },
 )
 
-REPO_NAME_UNDERSCORES = len("{pip_repo_name}".split("_")) -1
+REPO_NAME_UNDERSCORES = len("{pip_repo_name}".split("_")) - 1
 IGNORE_MISSING_IMPORTS = []  # XXX: make configurable
 IGNORE_UNUSED_DEPS = []
 EXTRA_MAPPINGS = {}
@@ -54,6 +54,7 @@ def _fawltydeps_aspect_impl(target, ctx):
     for src in data:
         if PyInfo in src:
             fail("py_library should go in deps, not data")
+
         # XXX: Do we, in general, want to deal with python sources in data ?
         python_files += [
             f
@@ -104,9 +105,9 @@ def _fawltydeps_aspect_impl(target, ctx):
     # Some libraries are just glorified filegroups factoring some common files and dependencies for a few binaries in the same package.
     # They would not work if called from another package because they behave like binaries without being so.
     # The solution I found was to annotate them with "py_binary" tags, so their special behavior can be handled correctly.
-    envs = ["."] # The workspace root
+    envs = ["."]  # The workspace root
     if ctx.rule.kind in ["py_binary", "py_test"] or "py_binary" in ctx.rule.attr.tags:
-        envs = [package, "."] # The package first, then the workspace root.
+        envs = [package, "."]  # The package first, then the workspace root.
 
     args.add("--json")
     args.add("--check")

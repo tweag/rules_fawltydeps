@@ -1,6 +1,6 @@
 """Build file for FawltyDeps rules."""
 
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
 load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 load("{pip_repo}//:requirements.bzl", "all_whl_requirements")
