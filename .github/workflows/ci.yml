@@ -43,7 +43,7 @@ jobs:
         repository-cache: true
         bazelrc: import %workspace%/.github/workflows/ci.bazelrc
     - name: Execute Tests
-      run: bazelisk test //... @rules_img_tool//... @rules_img_pull_tool//...
+      run: bazelisk test //...
   integration_test_matrix:
     strategy:
       fail-fast: false
@@ -65,7 +65,7 @@ jobs:
         repository-cache: true
         bazelrc: import %workspace%/.github/workflows/ci.bazelrc
     - name: Execute Integration Tests
-      run: bazelisk test "//e2e:integration_tests"
+      run: bazelisk test "//examples:all_integration_tests"
   sticky-warning:
     if: ${{ github.actor == 'renovate[bot]' && !contains(github.event.pull_request.labels.*.name, 'run-ci') && (github.event_name == 'pull_request') }}
     runs-on: ubuntu-latest
