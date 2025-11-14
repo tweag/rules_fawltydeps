@@ -17,10 +17,17 @@ bazel_cmds=(
 bazel="${BIT_BAZEL_BINARY:-}"
 workspace_dir="${BIT_WORKSPACE_DIR:-}"
 bit_cache="${BIT_CACHE:-${BASH_SOURCE[0]%%/sandbox/*}/bit_cache}"
+mkdir -p "${bit_cache}"
 
 [[ -n "${bazel:-}" ]] || exit_with_msg "Must specify the location of the Bazel binary."
 [[ -n "${workspace_dir:-}" ]] || exit_with_msg "Must specify the path of the workspace directory."
 [[ ${#bazel_cmds[@]} > 0 ]] || exit_with_msg "No Bazel commands were specified."
+[[ -w "${bit_cache}" ]] || exit_with_msg "Cannot create bit cache
+    BIT_CACHE: $BIT_CACHE
+    bit_cache: $bit_cache
+    BASH_SOURCE: ${BASH_SOURCE[0]}
+"
+
 
 
 # Configure caching
