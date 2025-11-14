@@ -43,9 +43,7 @@ jobs:
         repository-cache: true
         bazelrc: import %workspace%/.github/workflows/ci.bazelrc
     - name: Execute Tests
-      run: |
-        export BIT_CACHE=$HOME/.cache/bit_cache
-        bazelisk test //...
+      run: bazelisk test //...
   integration_test_matrix:
     strategy:
       fail-fast: false
