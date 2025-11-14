@@ -65,7 +65,7 @@ jobs:
         repository-cache: true
         bazelrc: import %workspace%/.github/workflows/ci.bazelrc
     - name: Execute Integration Tests
-      run: bazelisk test "//examples:all_integration_tests" --sandbox_add_mount_pair=$HOME
+      run: bazelisk test "//examples:all_integration_tests" --sandbox_writable_path=$HOME
   sticky-warning:
     if: ${{ github.actor == 'renovate[bot]' && !contains(github.event.pull_request.labels.*.name, 'run-ci') && (github.event_name == 'pull_request') }}
     runs-on: ubuntu-latest
