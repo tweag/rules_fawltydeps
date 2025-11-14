@@ -7,4 +7,3 @@ common --lockfile_mode=error
 common --test_env=BIT_CACHE=$HOME/.cache/bit_cache
 build --verbose_failures
 test --test_output=all
-test --sandbox_add_mount_pair=$HOME/.cache/bit_cache
