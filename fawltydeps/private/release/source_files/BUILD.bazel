@@ -1,0 +1,23 @@
+# gazelle:exclude_from_release
+
+# List of files to include in the release tarball
+release_files = [
+    "//:all_files",
+    "//fawltydeps:all_files",
+    "//fawltydeps/extensions:all_files",
+]
+
+filegroup(
+    name = "release_src_files",
+    srcs = release_files,
+    visibility = [
+        "//examples:__pkg__",
+        "//fawltydeps/private/release:__subpackages__",
+    ],
+)
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["*"]),
+    visibility = ["//fawltydeps/private/release:__subpackages__"],
+)

@@ -1,7 +1,7 @@
 """FawltyDeps Bazel aspect for checking Python dependencies."""
 
 load("@rules_python//python:defs.bzl", "PyInfo")
-load("@rules_python//python/private:reexports.bzl", "BuiltinPyInfo")
+load("@rules_python//python/private:reexports.bzl", "BuiltinPyInfo")  # buildifier: disable=bzl-visibility`
 
 FawltyDepsInfo = provider(
     doc = "Information about FawltyDeps analysis",

@@ -209,7 +209,7 @@
   "moduleExtensions": {
     "@@rules_fawltydeps+//fawltydeps/extensions:fawltydeps.bzl%fawltydeps": {
       "general": {
-        "bzlTransitiveDigest": "dBC3ehAwRDhPzvqfUn9H/Kp++vDD/RNRY1KfBCRE5vk=",
+        "bzlTransitiveDigest": "x9IyJi8KALdkA7W81GL4LKpbFHT7qGDQ40wxO/iYIic=",
         "usagesDigest": "NIV7V/K3E9vxzrVfaHXAnekEj96oIrOT89GTAt3WMeA=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

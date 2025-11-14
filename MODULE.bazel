@@ -30,6 +30,20 @@ pip.parse(
 )
 use_repo(pip, "fawltydeps_pip")
 
+##################
+# Dev dependencies
+##################
+
+bazel_dep(name = "aspect_bazel_lib", version = "2.21.2", dev_dependency = True)
+bazel_dep(name = "bazel_skylib", version = "1.8.2", dev_dependency = True)
+bazel_dep(name = "bazel_skylib_gazelle_plugin", version = "1.8.2", dev_dependency = True)
+bazel_dep(name = "buildifier_prebuilt", version = "8.2.1", dev_dependency = True)
+bazel_dep(name = "gazelle", version = "0.46.0", dev_dependency = True)
+bazel_dep(name = "rules_pkg", version = "1.1.0", dev_dependency = True)
+
+module_version = use_extension("//fawltydeps/private/config:defs.bzl", "module_version", dev_dependency = True)
+use_repo(module_version, "rules_fawltydeps_version")
+
 # Integration tests on example repos
 bazel_dep(
     name = "rules_bazel_integration_test",

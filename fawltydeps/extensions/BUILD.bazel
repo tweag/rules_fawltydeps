@@ -1,13 +1,19 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
 exports_files([
     "fawltydeps.bzl",
-    #    "defs.tpl.bzl",
-    #    "BUILD.bzl.bazel",
-    #    "convert_manifest.tpl.py",
-    #    "fawltydeps_wrapper.tpl.py",
 ])
 
 filegroup(
     name = "all_files",
     srcs = glob(["*"]),
     visibility = ["//:__subpackages__"],
+)
+
+# gazelle:exclude defs.tpl.bzl
+
+bzl_library(
+    name = "fawltydeps",
+    srcs = ["fawltydeps.bzl"],
+    visibility = ["//visibility:public"],
 )

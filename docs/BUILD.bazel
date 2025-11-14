@@ -1,0 +1,10 @@
+load("@aspect_bazel_lib//lib:docs.bzl", "stardoc_with_diff_test", "update_docs")
+
+# gazelle:exclude_from_release
+
+stardoc_with_diff_test(
+    name = "fawltydeps_extension",
+    bzl_library_target = "//fawltydeps/extensions:fawltydeps",
+)
+
+update_docs(name = "update")

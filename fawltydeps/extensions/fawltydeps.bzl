@@ -1,6 +1,20 @@
+""" Implementation of rules_fawltydeps 'fawltydeps' extension """
+
+DOC = """\
+Defines a module extension to instantiate @fawltydeps external repository with the right config.
+
+This technique has been deemed easier to use than configuration flags because the configuration exists in the MODULE file instead of .bazelrc. There are no fully qulified flags to maintain.
+This may change in the future
+"""
+
 def _fawltydeps_repo_impl(ctx):
     # Create files from templates
-    [
+    for target, src in [
+        ("defs.bzl", ctx.attr._defs_template),
+        ("BUILD.bazel", ctx.attr._build_template),
+        ("convert_manifest.py", ctx.attr._converter_template),
+        ("fawltydeps_wrapper.py", ctx.attr._wrapper_template),
+    ]:
         ctx.template(
             target,
             src,
@@ -10,16 +24,9 @@ def _fawltydeps_repo_impl(ctx):
                 "{+}": "+" if int((native.bazel_version or "9.x").split(".")[0]) >= 8 else "~",
             },
         )
-        for target, src in [
-            ("defs.bzl", ctx.attr._defs_template),
-            ("BUILD.bazel", ctx.attr._build_template),
-            ("convert_manifest.py", ctx.attr._converter_template),
-            ("fawltydeps_wrapper.py", ctx.attr._wrapper_template),
-        ]
-    ]
 
 # The repository rule that will be instantiated by the extension
-fawltydeps_repo = repository_rule(
+_fawltydeps_repo = repository_rule(
     implementation = _fawltydeps_repo_impl,
     attrs = {
         "pip_repo": attr.label(mandatory = True),
@@ -33,7 +40,7 @@ fawltydeps_repo = repository_rule(
 def _fawltydeps_impl(module_ctx):
     for mod in module_ctx.modules:
         for repo in mod.tags.configure:
-            fawltydeps_repo(
+            _fawltydeps_repo(
                 name = repo.name,
                 pip_repo = repo.pip_repo,
             )
@@ -47,6 +54,8 @@ _configure = tag_class(
 The label of the pip repository that you want fawltydeps to use to generate
 mappings between import names and module names. Will also be used to suggest
 names for missing modules.
+
+If you are using the same names as rules_python documentation this would be "@pypi"
 """,
         ),
         "name": attr.string(

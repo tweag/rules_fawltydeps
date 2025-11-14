@@ -1,0 +1,23 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+# gazelle:exclude_from_release
+
+go_binary(
+    name = "release_notes",
+    embed = [":release_notes_lib"],
+    visibility = ["//fawltydeps/private/release:__pkg__"],
+)
+
+go_library(
+    name = "release_notes_lib",
+    srcs = ["release_notes.go"],
+    importpath = "github.com/tweag/rules_fawltydeps/fawltydeps/private/release/release_notes",
+    visibility = ["//visibility:private"],
+)
+
+go_library(
+    name = "lib",
+    srcs = ["release_notes.go"],
+    importpath = "",
+    visibility = ["//visibility:private"],
+)

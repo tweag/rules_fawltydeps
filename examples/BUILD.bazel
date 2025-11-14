@@ -6,6 +6,9 @@ load(
 )
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
+# gazelle:exclude simple
+# gazelle:exclude_from_release
+
 sh_binary(
     name = "simple_test_runner",
     srcs = [":caching_test_runner.sh"],
@@ -21,7 +24,7 @@ bazel_integration_test(
     bazel_version = bazel_binaries.versions.current,
     test_runner = ":simple_test_runner",
     workspace_files = integration_test_utils.glob_workspace_files(TEST_NAME) + [
-        "//:local_repository_files",
+        "//fawltydeps/private/release/source_files:release_src_files",
     ],
     workspace_path = TEST_NAME,
 )
@@ -36,7 +39,7 @@ bazel_integration_test(
         bazel_version = bazel_version,
         test_runner = ":simple_test_runner",
         workspace_files = integration_test_utils.glob_workspace_files(TEST_NAME) + [
-            "//:local_repository_files",
+            "//fawltydeps/private/release/source_files:release_src_files",
         ],
         workspace_path = TEST_NAME,
     )

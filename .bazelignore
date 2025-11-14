@@ -1,0 +1,4 @@
+examples/simple/bazel-bin
+examples/simple/bazel-out
+examples/simple/bazel-simple
+examples/simple/bazel-testlogs

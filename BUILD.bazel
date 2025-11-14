@@ -1,20 +1,19 @@
 """Root BUILD file for rules_fawltydeps."""
 
 exports_files([
+    "MODULE.bazel",
     "requirements.txt",
+    ".bcr/metadata.tpl.json",
 ])
 
-# This target collects all of rules_fawltydeps files needed by the integration test workspaces.
+# gazelle:prefix github.com/tweag/rules_fawltydeps
+
 filegroup(
-    name = "local_repository_files",
-    # Include every package that is required by the child workspaces.
+    name = "all_files",
     srcs = [
         "BUILD.bazel",
         "MODULE.bazel",
-        "MODULE.bazel.lock",
         "requirements.txt",
-        "//fawltydeps:all_files",
-        "//fawltydeps/extensions:all_files",
     ],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//fawltydeps/private/release:__subpackages__"],
 )

@@ -1,0 +1,5 @@
+{
+    "integrity": "",
+    "url": "https://github.com/{OWNER}/{REPOS}/releases/download/{TAG}/rules_fawltydeps-{TAG}.tar.gz",
+    "docs_url": "https://github.com/{OWNER}/{REPO}/releases/download/{TAG}/rules_fawltydeps-{TAG}.docs.tar.gz"
+}

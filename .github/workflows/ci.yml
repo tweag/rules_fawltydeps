@@ -1,0 +1,84 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+  push:
+    branches:
+      - main
+  schedule:
+    # Every day at 10:09 UTC.
+    - cron: '9 10 * * *'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  buildifier_check:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name != 'pull_request' || github.actor != 'renovate[bot]' || contains(github.event.pull_request.labels.*.name, 'run-ci') }}
+    steps:
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@4fd964a13a440a8aeb0be47350db2fc640f19ca8 # 0.15.0
+      with:
+        bazelrc: import %workspace%/.github/workflows/ci.bazelrc
+    - name: Run buildifier
+      run: bazelisk run //util:buildifier.check
+  tidy_and_test_matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-13, macos-15, ubuntu-22.04, windows-2025]
+    runs-on: ${{ matrix.runner }}
+    if: ${{ github.event_name != 'pull_request' || github.actor != 'renovate[bot]' || contains(github.event.pull_request.labels.*.name, 'run-ci') }}
+    steps:
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@4fd964a13a440a8aeb0be47350db2fc640f19ca8 # 0.15.0
+      with:
+        bazelisk-cache: true
+        disk-cache: ${{ github.workflow }}-${{ matrix.runner }}-tidy_and_test_matrix
+        repository-cache: true
+        bazelrc: import %workspace%/.github/workflows/ci.bazelrc
+    - name: Execute Tests
+      run: bazelisk test //... @rules_img_tool//... @rules_img_pull_tool//...
+  integration_test_matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-13, macos-15, ubuntu-22.04, windows-2025]
+    runs-on: ${{ matrix.runner }}
+    if: ${{ github.event_name != 'pull_request' || github.actor != 'renovate[bot]' || contains(github.event.pull_request.labels.*.name, 'run-ci') }}
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    steps:
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+    - name: Setup Bazel
+      uses: bazel-contrib/setup-bazel@4fd964a13a440a8aeb0be47350db2fc640f19ca8 # 0.15.0
+      with:
+        bazelisk-cache: true
+        disk-cache: ${{ github.workflow }}-${{ matrix.runner }}-integration_test_matrix
+        repository-cache: true
+        bazelrc: import %workspace%/.github/workflows/ci.bazelrc
+    - name: Execute Integration Tests
+      run: bazelisk test "//e2e:integration_tests"
+  sticky-warning:
+    if: ${{ github.actor == 'renovate[bot]' && !contains(github.event.pull_request.labels.*.name, 'run-ci') && (github.event_name == 'pull_request') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or update warning comment
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ⚠️ **Heads up:** An important check was **skipped** for this PR.
+            - Actor: `${{ github.actor }}`
+            - Commit: `${{ github.sha }}`
+            - Reason: Renovate PR (auto-updates)
+
+            _Add the `run-ci` label or re-run the workflow manually to execute the full checks._
+          edit-mode: replace
