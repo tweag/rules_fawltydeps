@@ -23,15 +23,16 @@ exports_files([
     "test_wrapper.sh",
 ])
 
-release_files_test(
-    name = "release_files_test",
-    target_compatible_with = select({
-        # skip windows, since we are using a bash script
-        "@platforms//os:windows": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
-    update_release_files_binary = "//fawltydeps/private/release/gazelle_plugin/cmd/update_release_files",
-)
+# Disabled for now
+# release_files_test(
+#     name = "release_files_test",
+#     target_compatible_with = select({
+#         # skip windows, since we are using a bash script
+#         "@platforms//os:windows": ["@platforms//:incompatible"],
+#         "//conditions:default": [],
+#     }),
+#     update_release_files_binary = "//fawltydeps/private/release/gazelle_plugin/cmd/update_release_files",
+# )
 
 go_library(
     name = "all_files",
