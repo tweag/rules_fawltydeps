@@ -70,11 +70,25 @@ func calculateSHA256(filePath string) (string, error) {
 
 const releaseNotesTemplate = `## Using Bzlmod
 
-Add the following to your ` + "`" + `MODULE.bazel` + "`" + ` file:
+Add the following to your ` + "`MODULE.bazel`" + ` file:
 
 ` + "```" + `starlark
 bazel_dep(name = "rules_fawltydeps", version = "{{.VersionWithoutV}}")
+fawltydeps = use_extension("@rules_fawltydeps//fawltydeps/extensions:fawltydeps.bzl", "fawltydeps")
+fawltydeps.configure(
+    pip_repo = "@pypi",
+)
+use_repo(fawltydeps, "fawltydeps")
 ` + "```" + `
+
+and the following to your ` + "`.bazelrc`" + ` file:
+
+` + "```" + `
+build:fawltydeps --aspects "@fawltydeps//:defs.bzl%fawltydeps_aspect"
+build:fawltydeps --output_groups=fawltydeps_report
+` + "```" + `
+
+Then call bazel on your targets with ` + "`bazel build --config=gawltydeps`" + `
 
 For further instructions, see the [README](https://github.com/tweag/rules_fawltydeps#readme).
 
