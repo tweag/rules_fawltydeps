@@ -16,7 +16,7 @@ export WORKSPACE_RC="$PWD/.bazelrc"
 env
 # Hardcode for now
 bazel_cmds=(
-  "build //... --noworkspace_rc --nosystem_rc --nohome_rc --announce_rc --bazelrc=$WORKSPACE_RC --config=fawltydeps --keep_going --verbose_failures"
+  "build //... --ignore_all_rc_files --noworkspace_rc --nosystem_rc --nohome_rc --announce_rc --bazelrc=$WORKSPACE_RC --config=fawltydeps --keep_going --verbose_failures"
 )
 args=()
 
