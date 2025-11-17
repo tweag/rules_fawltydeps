@@ -11,47 +11,52 @@ exit_with_msg() {
   exit 1
 }
 
+# Hardcode for now
 bazel_cmds=(
   "build //... --announce_rc --config=fawltydeps --keep_going --verbose_failures"
 )
+args=()
+
 bazel="${BIT_BAZEL_BINARY:-}"
 workspace_dir="${BIT_WORKSPACE_DIR:-}"
-bit_cache="${BIT_CACHE:-${BASH_SOURCE[0]%%/sandbox/*}/bit_cache}"
-mkdir -p "${bit_cache}"
 
 [[ -n "${bazel:-}" ]] || exit_with_msg "Must specify the location of the Bazel binary."
 [[ -n "${workspace_dir:-}" ]] || exit_with_msg "Must specify the path of the workspace directory."
 [[ ${#bazel_cmds[@]} > 0 ]] || exit_with_msg "No Bazel commands were specified."
-[[ -w "${bit_cache}" ]] || exit_with_msg "Cannot create bit cache
-    BIT_CACHE: $BIT_CACHE
-    bit_cache: $bit_cache
-    BASH_SOURCE: ${BASH_SOURCE[0]}
-"
-
 
 
 # Configure caching
-#
-args=()
-# BAZELISK_HOME
-bazelisk_home="${bit_cache}/bazelisk"
-mkdir -p "$bazelisk_home"
-export BAZELISK_HOME="$bazelisk_home"
-# --repository_cache
-repository_cache="${bit_cache}/repository_cache"
-mkdir -p "$repository_cache"
-args+=("--repository_cache" "$repository_cache")
-# --disk_cache
-disk_cache="${bit_cache}/disk_cache"
-mkdir -p "$disk_cache"
-args+=("--disk_cache" "$disk_cache")
-# -- repo_contents_cache
-bazel_version=$("${bazel}" --version | cut -d ' ' -f 2)
-if [[ -n "${bazel_version}" ]] && "${bazel}" info --repo_contents_cache= &>/dev/null ; then
-  repo_contents_cache="${bit_cache}/repo_contents_cache/$bazel_version"
-  mkdir -p "$repo_contents_cache"
-  args+=("--repo_contents_cache" "$repo_contents_cache")
-fi
+if [[ "${BIT_CACHE}" != "disable" ]]
+then
+  bit_cache="${BIT_CACHE:-${BASH_SOURCE[0]%%/sandbox/*}/bit_cache}"
+  mkdir -p "${bit_cache}"
+
+  [[ -w "${bit_cache}" ]] || exit_with_msg "Cannot create bazel integration tests cache
+      BIT_CACHE: $BIT_CACHE
+      bit_cache: $bit_cache
+      BASH_SOURCE: ${BASH_SOURCE[0]}
+  "
+
+  # BAZELISK_HOME
+  bazelisk_home="${bit_cache}/bazelisk"
+  mkdir -p "$bazelisk_home"
+  export BAZELISK_HOME="$bazelisk_home"
+  # --repository_cache
+  repository_cache="${bit_cache}/repository_cache"
+  mkdir -p "$repository_cache"
+  args+=("--repository_cache" "$repository_cache")
+  # --disk_cache
+  disk_cache="${bit_cache}/disk_cache"
+  mkdir -p "$disk_cache"
+  args+=("--disk_cache" "$disk_cache")
+  # -- repo_contents_cache
+  bazel_version=$("${bazel}" --version | cut -d ' ' -f 2)
+  if [[ -n "${bazel_version}" ]] && "${bazel}" info --repo_contents_cache= &>/dev/null ; then
+    repo_contents_cache="${bit_cache}/repo_contents_cache/$bazel_version"
+    mkdir -p "$repo_contents_cache"
+    args+=("--repo_contents_cache" "$repo_contents_cache")
+  fi
+fi # enable caching
 
 for var_name in ${ENV_VARS_TO_ABSOLUTIFY:-}; do
   export "${var_name}=$(pwd)/$(printenv "${var_name}")"
