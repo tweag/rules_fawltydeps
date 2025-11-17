@@ -13,7 +13,7 @@ exit_with_msg() {
 
 # Hardcode for now
 bazel_cmds=(
-  "build //... --nohome_rc --announce_rc --config=fawltydeps --keep_going --verbose_failures"
+  "build //... --nosystem_rc --nohome_rc --announce_rc --config=fawltydeps --keep_going --verbose_failures"
 )
 args=()
 
