@@ -16,6 +16,7 @@ export WORKSPACE_RC="$PWD/.bazelrc"
 env
 # Hardcode for now
 bazel_cmds=(
+  "shutdown"
   "build //... --ignore_all_rc_files --noworkspace_rc --nosystem_rc --nohome_rc --announce_rc --bazelrc=$WORKSPACE_RC --config=fawltydeps --keep_going --verbose_failures"
 )
 args=()
@@ -66,6 +67,9 @@ for var_name in ${ENV_VARS_TO_ABSOLUTIFY:-}; do
 done
 
 cd "${workspace_dir}"
+
+env
+set -x
 
 for cmd in "${bazel_cmds[@]}" ; do
   # Break the cmd string into parts
