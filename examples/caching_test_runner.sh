@@ -11,9 +11,10 @@ exit_with_msg() {
   exit 1
 }
 
+unset BAZELRC
 # Hardcode for now
 bazel_cmds=(
-  "build //... --noworkspace_rc --nosystem_rc --nohome_rc --announce_rc --config=fawltydeps --keep_going --verbose_failures"
+  "build //... --announce_rc --config=fawltydeps --keep_going --verbose_failures"
 )
 args=()
 
