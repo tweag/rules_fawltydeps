@@ -2,6 +2,7 @@ load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load(
     "@rules_bazel_integration_test//bazel_integration_test:defs.bzl",
     "bazel_integration_test",
+    "default_test_runner",
     "integration_test_utils",
 )
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
@@ -9,10 +10,19 @@ load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 # gazelle:exclude simple
 # gazelle:exclude_from_release
 
-sh_binary(
+default_test_runner(
     name = "simple_test_runner",
-    srcs = [":caching_test_runner.sh"],
+    bazel_cmds = [
+        "--nosystem_rc --nohome_rc build //... --announce_rc --config=fawltydeps --keep_going --verbose_failures --lockfile_mode=off"
+    ],
 )
+
+# This test has caching enabled
+#sh_binary(
+#    name = "simple_test_runner",
+#    srcs = [":caching_test_runner.sh"],
+#)
+
 
 ## Simple
 
