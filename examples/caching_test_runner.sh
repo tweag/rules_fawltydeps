@@ -12,12 +12,10 @@ exit_with_msg() {
 }
 
 unset BAZELRC
-export WORKSPACE_RC="$PWD/.bazelrc"
 env
 # Hardcode for now
 bazel_cmds=(
-  "shutdown"
-  "build //... --ignore_all_rc_files --noworkspace_rc --nosystem_rc --nohome_rc --announce_rc --bazelrc=$WORKSPACE_RC --config=fawltydeps --keep_going --verbose_failures"
+  "--nosystem_rc --nohome_rc build //... --announce_rc --config=fawltydeps --keep_going --verbose_failures --lockfile_mode=off"
 )
 args=()
 
@@ -76,5 +74,5 @@ for cmd in "${bazel_cmds[@]}" ; do
   read -a cmd_parts <<< ${cmd}
   # Execute the Bazel command
   echo Running "${bazel}" "${cmd_parts[@]}" "${args[@]}"
-  "${bazel}" "${cmd_parts[@]}" "${args[@]}"
+  bash -x "${bazel}" "${cmd_parts[@]}" "${args[@]}"
 done
