@@ -1,5 +1,12 @@
 
-# To update these lines, execute 
+# Build Go binaries (gazelle, the release tools) in pure mode, i.e. with cgo
+# disabled. With the hermetic_cc_toolchain (zig/musl) linker, cgo-mode Go
+# binaries fail to link the `net` and `runtime/cgo` packages against glibc
+# ("relocation target getaddrinfo not defined", etc.). None of our Go tools
+# need cgo, so forcing pure mode makes `bazel test //...` link on Linux.
+build --@rules_go//go/config:pure
+
+# To update these lines, execute
 # `bazel run @rules_bazel_integration_test//tools:update_deleted_packages`
 build --deleted_packages=examples/simple,examples/simple/client,examples/simple/libs,examples/simple/server
 query --deleted_packages=examples/simple,examples/simple/client,examples/simple/libs,examples/simple/server
