@@ -1,0 +1,26 @@
+module(
+    name = "rules_fawltydeps_e2e_bzlmod",
+    version = "0.0.0",
+)
+
+# Resolved from the registry (no local_path_override) so this doubles as the
+# BCR presubmit test module.
+bazel_dep(name = "rules_fawltydeps", version = "0.1.0")
+bazel_dep(name = "rules_python", version = "1.6.3")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.10")
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "py_deps",
+    python_version = "3.10",
+    requirements_lock = "//:requirements.txt",
+)
+use_repo(pip, "py_deps")
+
+fawltydeps = use_extension("@rules_fawltydeps//fawltydeps/extensions:fawltydeps.bzl", "fawltydeps")
+fawltydeps.configure(
+    pip_repo = "@py_deps",
+)
+use_repo(fawltydeps, "fawltydeps")

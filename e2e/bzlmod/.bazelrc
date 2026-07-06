@@ -1,0 +1,4 @@
+# Enable the fawltydeps aspect. `bazel build --config=fawltydeps //...`
+# runs the dependency check across the module.
+build:fawltydeps --aspects @fawltydeps//:defs.bzl%fawltydeps_aspect
+build:fawltydeps --output_groups=fawltydeps_report
