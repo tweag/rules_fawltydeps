@@ -7,3 +7,13 @@ common --lockfile_mode=error
 common --test_env=BIT_CACHE=disable
 build --verbose_failures
 test --test_output=all
+
+# The bazel_integration_test runner is a shell script that locates its inner
+# test-runner script through the runfiles tree. On Windows that tree is not
+# materialized by default, so the runner fails with
+# "simple_test_runner.sh: No such file or directory" (Exit 127). These are the
+# two accommodations rules_bazel_integration_test itself ships in its
+# shared.bazelrc: enable symlinks at startup (required for a real runfiles tree
+# on Windows) and force runfiles on. Both are no-ops on Linux/macOS.
+startup --windows_enable_symlinks
+common --enable_runfiles
