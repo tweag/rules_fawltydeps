@@ -1,35 +1,69 @@
 # Dry-run of the release pipeline. Exercises release_prep.sh and the artifact
 # upload exactly like the real Release workflow, but:
-#   * only runs on manual dispatch (never on a tag push),
-#   * creates a DRAFT + prerelease GitHub Release you can inspect and delete,
+#   * only runs on manual dispatch (never on an existing tag),
+#   * pushes a THROWAWAY tag, runs the release against it as a DRAFT, and then
+#     always deletes both the tag and the draft Release again,
 #   * does NOT run the publish-to-bcr job, so nothing is ever sent to the
 #     Bazel Central Registry.
 #
-# Use it to verify packaging, release notes, and the uploaded asset names
-# without cutting a real release. Delete the draft Release when you're done.
+# The reusable release_ruleset workflow checks out `tag_name` as a real git
+# ref, so a dry run needs a tag that actually exists — hence the create/cleanup
+# jobs around it. Use it to verify packaging, release notes, and the uploaded
+# asset names without cutting a real release.
 name: Release (dry-run)
 on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: Tag to simulate releasing (e.g. v0.1.0-rc1). Not pushed as a real git tag.
-        required: true
+        description: Throwaway tag to push and release, then delete (e.g. v0.0.0-dryrun).
+        required: false
+        default: v0.0.0-dryrun
         type: string
 permissions:
   id-token: write
   attestations: write
   contents: write
 jobs:
+  # Push a real (lightweight) tag so the reusable release workflow has a ref to
+  # check out. Force-updated in case a previous dry run left it behind.
+  tag:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - name: Push throwaway tag
+        run: |
+          git tag -f "${{ inputs.tag_name }}"
+          git push -f origin "refs/tags/${{ inputs.tag_name }}"
+
   release_dryrun:
+    needs: tag
     uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.2.3
     with:
       release_files: |
         dist/rules_fawltydeps-*.tar.gz
         dist/*.docs.tar.gz
-      # Draft + prerelease so it never appears as the latest release and is
-      # trivially deletable from the Releases UI.
+      # Draft + prerelease so it never appears as the latest release; the
+      # cleanup job deletes it regardless.
       prerelease: true
       draft: true
       tag_name: ${{ inputs.tag_name }}
     secrets:
       inherit
+
+  # Always remove the throwaway tag and any draft Release created for it, so a
+  # dry run leaves no trace whether it passed or failed.
+  cleanup:
+    needs: [tag, release_dryrun]
+    if: always() && needs.tag.result == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+      - name: Delete draft Release and throwaway tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag_name }}
+        run: |
+          # Delete the (draft) Release for this tag if the release job created one.
+          gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes 2>/dev/null || true
+          # Delete the tag from the remote.
+          git push origin --delete "refs/tags/$TAG" 2>/dev/null || true
