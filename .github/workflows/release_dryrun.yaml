@@ -1,0 +1,35 @@
+# Dry-run of the release pipeline. Exercises release_prep.sh and the artifact
+# upload exactly like the real Release workflow, but:
+#   * only runs on manual dispatch (never on a tag push),
+#   * creates a DRAFT + prerelease GitHub Release you can inspect and delete,
+#   * does NOT run the publish-to-bcr job, so nothing is ever sent to the
+#     Bazel Central Registry.
+#
+# Use it to verify packaging, release notes, and the uploaded asset names
+# without cutting a real release. Delete the draft Release when you're done.
+name: Release (dry-run)
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Tag to simulate releasing (e.g. v0.1.0-rc1). Not pushed as a real git tag.
+        required: true
+        type: string
+permissions:
+  id-token: write
+  attestations: write
+  contents: write
+jobs:
+  release_dryrun:
+    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.2.3
+    with:
+      release_files: |
+        dist/rules_fawltydeps-*.tar.gz
+        dist/*.docs.tar.gz
+      # Draft + prerelease so it never appears as the latest release and is
+      # trivially deletable from the Releases UI.
+      prerelease: true
+      draft: true
+      tag_name: ${{ inputs.tag_name }}
+    secrets:
+      inherit
