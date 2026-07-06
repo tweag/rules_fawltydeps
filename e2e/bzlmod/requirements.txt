@@ -1,0 +1,4 @@
+# Intentionally empty: the e2e test module has no third-party Python
+# dependencies so the BCR presubmit can run on every platform without a
+# hash-pinned lockfile. rules_fawltydeps still needs a pip repo to build
+# its import->module mapping from, so we parse this empty lock.

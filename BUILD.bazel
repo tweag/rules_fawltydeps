@@ -3,7 +3,7 @@
 exports_files([
     "MODULE.bazel",
     "requirements.txt",
-    ".bcr/metadata.tpl.json",
+    ".bcr/metadata.template.json",
 ])
 
 # gazelle:prefix github.com/tweag/rules_fawltydeps

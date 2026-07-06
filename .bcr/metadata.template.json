@@ -11,8 +11,6 @@
     "repository": [
         "github:tweag/rules_fawltydeps"
     ],
-    "versions": [
-        "0.1.0-alpha"
-    ],
+    "versions": [],
     "yanked_versions": {}
 }

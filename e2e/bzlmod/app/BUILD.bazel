@@ -1,0 +1,13 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+py_library(
+    name = "greeting",
+    srcs = ["greeting.py"],
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "main",
+    srcs = ["main.py"],
+    deps = [":greeting"],
+)

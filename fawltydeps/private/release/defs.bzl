@@ -221,7 +221,7 @@ versioned_filename_info = rule(
         ),
         "_metadata_template": attr.label(
             allow_single_file = True,
-            default = "//:.bcr/metadata.tpl.json",
+            default = "//:.bcr/metadata.template.json",
         ),
         "_release_notes_generator": attr.label(
             executable = True,
